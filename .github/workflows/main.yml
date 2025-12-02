@@ -1,0 +1,53 @@
+name: Deploy with AWS CDK
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write   # 必須開啟，才能請求 OIDC Token
+  contents: read
+  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'  # 使用支持的 Node.js 版本（建議 16 或更高）
+
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'  # 根據你的 CDK 專案需求設置 Python 版本
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+        working-directory: ./  # 確保 requirements.txt 在正確路徑
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run Dependency Audit
+        run: pip-audit
+        
+      - name: CDK Synth
+        run: cdk synth
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::752953536465:role/GithubActionsRole
+          aws-region: ap-northeast-1
+
+      - name: CDK Deploy
+        run: cdk deploy --require-approval never
+        
