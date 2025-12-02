@@ -33,6 +33,12 @@ jobs:
         run: pip install -r requirements.txt
         working-directory: ./  # 確保 requirements.txt 在正確路徑
 
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run Dependency Audit
+        run: pip-audit
+        
       - name: CDK Synth
         run: cdk synth
 
